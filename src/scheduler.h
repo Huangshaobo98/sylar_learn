@@ -13,6 +13,12 @@ namespace sylar {
             typedef std::shared_ptr<Scheduler> ptr;
             typedef Mutex MutexType;
 
+            /**
+             *  @brief 调度器构造函数
+             *  @param threads 线程数
+             *  @param use_caller 是否使用多线程调度
+             *  @param name 调度器线程名
+             */
             Scheduler(size_t threads = 1, bool use_caller = true, const std::string& name = "Scheduler");
             ~Scheduler();
             const std::string& getName() const { return m_name;}
@@ -55,12 +61,13 @@ namespace sylar {
                 }
             }
         protected:
-            void tickle();
+            virtual void tickle();
             void run();
             virtual bool stopping();
             virtual void idle();    // 闲置处理，即没有事情做但又不能使线程终止
 
             void setThis();
+            bool hasIdleThreads() { return m_idleThreadCount > 0;}
         private:
             template<class FiberOrCallback>
             bool scheduleNoLock(FiberOrCallback fc, int thread = -1) {

@@ -9,10 +9,13 @@ namespace sylar {
 
     static thread_local Fiber* t_fiber = nullptr; // 主协程
 
+
     Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name) 
         :m_name(name) {
         __ASSERT(threads > 0);
-
+        
+        // use_caller表示使用开启调度器的线程作为root线程，这样就少开一个root线程
+        // 同时use_caller使用当前线程作为调度器主协程调度器
         if(use_caller) {
             
             sylar::Fiber::GetThis();        // 如果线程没有初始化协程，则初始化一个协程        
@@ -30,7 +33,7 @@ namespace sylar {
             m_threadIds.push_back(m_rootThread);    // 线程容器，存储各线程id
 
         } else {
-            m_rootThread = -1;  // 表示不存在线程
+            m_rootThread = -1;  // 不使用调度器线程作为root线程
         }
 
         m_threadCount = threads;    //记录线程数量
@@ -56,6 +59,7 @@ namespace sylar {
         MutexType::Lock lock(m_mutex);
         if(!m_stopping) {
             // 如果没启动则返回
+            // 默认情况下是1，也就是stop状态，不可重复开启
             return;
         }
         m_stopping = false;
@@ -63,7 +67,7 @@ namespace sylar {
 
         m_threads.resize(m_threadCount);
         for(size_t i = 0; i < m_threadCount; ++i) {
-            m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), m_name + "_worker_" + std::to_string(i)));
+            m_threads[i].reset(new Thread(std::bind(&Scheduler::run, this), m_name + "_" + std::to_string(i)));
             m_threadIds.push_back(m_threads[i]->getId());
         }
 
@@ -77,10 +81,10 @@ namespace sylar {
     }
     void Scheduler::stop() {
         m_autoStop = true;
-        // 主协程存在，且当前线程数为0(不包括Scheduler所在的协程)，同时主协程状态为TERM或INIT
+        // 主协程存在，且当前线程数为0(不包括Scheduler所在的协程)，同时主协程状态为TERM或INIT，需要将stopping状态位置0
         if(m_rootFiber && m_threadCount == 0 && 
                 (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT)) {
-            __LOG_INFO(g_logger) << "Secheduler rootFiber: " << this << " stopped";
+            __LOG_INFO(g_logger) << "Secheduler: " << this << " stopped";
             m_stopping = true;
         }
         if(stopping()) {
@@ -89,9 +93,14 @@ namespace sylar {
         }
 
         //bool exit_on_this_fiber = false;
+
+        __LOG_INFO(g_logger) << "Secheduler::GetThis:" << GetThis() << " This:" << this;
+
         if(m_rootThread != -1) {
+            // use_caller = true 当前线程指向的调度器必须为主scheduler
             __ASSERT(GetThis() == this);
         } else {
+            // use_caller = false 没设置t_scheduler，因此为0
             __ASSERT(GetThis() != this);
         }
         m_stopping = true;
@@ -103,6 +112,7 @@ namespace sylar {
             tickle();   // 唤醒主线程中的协程
         }
 
+        // 如果主协程存在，需要判断是否停止
         if(m_rootFiber) {
             /*while(!stopping()) {
                 if(m_rootFiber->getState() == Fiber::TERM
@@ -113,12 +123,15 @@ namespace sylar {
                 }
                 m_rootFiber->call();
             }*/
+
+            //若没停止，则继续调用主协程
             if(!stopping()) {
                 m_rootFiber->call();
             }
             
         }
 
+        // 回收其他线程
         std::vector<Thread::ptr> thrs;
         {
             MutexType::Lock lock(m_mutex);
@@ -137,10 +150,10 @@ namespace sylar {
     void Scheduler::run(){
         // 1号及以后的协程执行的操作
         __LOG_INFO(g_logger) << "run";
-        //Fiber::GetThis();   // 线程初始化一个协程
-        setThis();  // 先把当前调度器设为自身
+
+        setThis();  // 先把主调度器设为自身
         if(sylar::GetThreadId() != m_rootThread) {    // 如果线程ID不为主线程ID，也就是说子线程
-            t_fiber = Fiber::GetThis().get();   // 当前协程就设为主协程
+            t_fiber = Fiber::GetThis().get();   // 当前协程就设为Fiber的主协程
         }
         Fiber::ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle, this)));    //构造一个用于处理闲置状态的协程
         Fiber::ptr cb_fiber;
@@ -148,6 +161,7 @@ namespace sylar {
         Assign ft;
         while(true) {
             ft.reset();
+            bool is_active = false;
             bool tickle_me = false;
             {
                 MutexType::Lock lock(m_mutex);
@@ -171,8 +185,9 @@ namespace sylar {
                     // 此时才是thread真正可以处理的fiber，需要将其拿出来，并从fiber序列中移除
                     ft = *it;
                     m_fibers.erase(it);
+                    ++m_activeThreadCount;
+                    is_active = true;
                     break;
-                    // 可能有问题，这里获取任务后，不出循环
                 }
             }
             if(tickle_me) {
@@ -183,7 +198,7 @@ namespace sylar {
             if(ft.fiber && (ft.fiber->getState() != Fiber::TERM
                         && ft.fiber->getState() != Fiber::EXCEPT)) {
                 // 切入协程
-                ++m_activeThreadCount;
+                
                 ft.fiber->swapIn();
                 --m_activeThreadCount;
                 if(ft.fiber->getState() == Fiber::READY) {
@@ -205,7 +220,6 @@ namespace sylar {
                 }
                 ft.reset();
 
-                ++m_activeThreadCount;
                 cb_fiber->swapIn();
                 --m_activeThreadCount;
 
@@ -215,13 +229,17 @@ namespace sylar {
                     cb_fiber.reset();
                 } else if (cb_fiber->getState() == Fiber::TERM 
                     || cb_fiber->getState() == Fiber::EXCEPT) {
-                        // 状态不为结束态，也不为异常态，表示让出了CPU
+                        // 状态为结束态，或异常态，表示退出线程
                     cb_fiber->reset(nullptr);
                 } else /*if (cb_fiber->getState() != Fiber::TERM)*/ {
                     cb_fiber->m_state= Fiber::HOLD;
                     cb_fiber.reset();
                 }
             } else {
+                if(is_active) {
+                    --m_activeThreadCount;
+                    continue;
+                }
                 if(idle_fiber->getState() == Fiber::TERM) {
                     __LOG_INFO(g_logger) << "idle fiber term";
                     //idle_fiber.reset();
@@ -237,18 +255,19 @@ namespace sylar {
                 }        
             }
         }
-        
-
-
     }
     void Scheduler::tickle() {
         __LOG_INFO(g_logger) << "tickle";
     }
     bool Scheduler::stopping() {
         MutexType::Lock lock(m_mutex);
+        // 判断调度器可停止条件：自动停止位为1, stopping状态位为1, 协程队列为空, 活跃状态的线程为0
         return m_autoStop && m_stopping && m_fibers.empty() && m_activeThreadCount == 0;
     }
     void Scheduler::idle() {
         __LOG_INFO(g_logger) << "idle";
+        while(!stopping()) {
+            sylar::Fiber::YieldToHold();
+        }
     }
 }

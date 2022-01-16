@@ -94,8 +94,6 @@ namespace sylar {
         } else {
             raw_cur->back();
         }
-        
-
         //程序不会执行到这里，因此无法释放智能指针包裹的cur
         __ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_cur->getId()));
     }
