@@ -269,15 +269,10 @@ void IOManager::tickle() {
     __ASSERT(rt == 1);
 }
 
-bool IOManager::stopping(uint64_t& timeout) {
+bool IOManager::stopping() {
     return m_pendingEventCount == 0
         && Scheduler::stopping();
 
-}
-
-bool IOManager::stopping() {
-    uint64_t timeout = 0;
-    return stopping(timeout);
 }
 
 void IOManager::idle() {
@@ -289,8 +284,7 @@ void IOManager::idle() {
     });
 
     while(true) {
-        uint64_t next_timeout = 0;
-        if(!(stopping(next_timeout))) {
+        if(stopping()) {
             __LOG_INFO(g_logger) << "name=" << getName()
                                      << " idle stopping exit";
             break;
@@ -299,15 +293,11 @@ void IOManager::idle() {
         int rt = 0;
         do {
             static const int MAX_TIMEOUT = 3000;
-            if(next_timeout != ~0ull) {
-                next_timeout = (int)next_timeout > MAX_TIMEOUT
-                                ? MAX_TIMEOUT : next_timeout;
-            } else {
-                next_timeout = MAX_TIMEOUT;
-            }
-            rt = epoll_wait(m_epfd, events, MAX_EVNETS, (int)next_timeout);
+            __LOG_INFO(g_logger) << "waitting...";
+            rt = epoll_wait(m_epfd, events, MAX_EVNETS, MAX_TIMEOUT);
             if(rt < 0 && errno == EINTR) {
             } else {
+                
                 break;
             }
         } while(true);
