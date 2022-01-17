@@ -161,7 +161,7 @@ bool IOManager::delEvent(int fd, Event event) {
     lock.unlock();
 
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-    if(!(!(fd_ctx->events & event))) {
+    if(!(fd_ctx->events & event)) {
         return false;
     }
 
@@ -195,7 +195,7 @@ bool IOManager::cancelEvent(int fd, Event event) {
     lock.unlock();
 
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-    if(!(!(fd_ctx->events & event))) {
+    if(!(fd_ctx->events & event)) {
         return false;
     }
 
@@ -311,14 +311,6 @@ void IOManager::idle() {
                 break;
             }
         } while(true);
-
-        std::vector<std::function<void()> > cbs;
-        listExpiredCb(cbs);
-        if(!cbs.empty()) {
-            //__LOG_DEBUG(g_logger) << "on timer cbs.size=" << cbs.size();
-            schedule(cbs.begin(), cbs.end());
-            cbs.clear();
-        }
 
         //if(_UNLIKELY(rt == MAX_EVNETS)) {
         //    __LOG_INFO(g_logger) << "epoll wait events=" << rt;
