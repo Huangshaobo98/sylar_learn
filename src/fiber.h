@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Autor: huang
+ * @Date: 2022-01-17 16:21:55
+ * @LastEditors: huang
+ * @LastEditTime: 2022-01-17 16:21:55
+ */
 #ifndef __FIBER_H__
 #define __FIBER_H__
 #include <ucontext.h>
@@ -55,6 +63,8 @@ namespace sylar{
             // 主调用方法，不使用use_caller的方法
             static void MainFunc();
             
+            static void CallerMainFunc();
+
             static uint64_t GetFiberId();
         private:
             uint64_t m_id = 0;
@@ -63,7 +73,6 @@ namespace sylar{
             ucontext_t m_ctx;
             void* m_stack = nullptr;
             std::function<void()> m_cb;
-            bool m_usecaller = false;
     };
 }
 

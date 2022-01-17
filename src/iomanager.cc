@@ -4,7 +4,7 @@
  * @Autor: huang
  * @Date: 2022-01-16 12:09:07
  * @LastEditors: huang
- * @LastEditTime: 2022-01-17 00:09:55
+ * @LastEditTime: 2022-01-17 16:39:32
  */
 
 #include "iomanager.h"
@@ -28,6 +28,7 @@ namespace sylar {
             default:
                 __ASSERT2(false, "getContext");
         }
+        throw std::invalid_argument("getContext invalid event");
     }
     
     void IOManager::FdContext::resetContext(IOManager::FdContext::EventContext& ctx) {
@@ -48,26 +49,27 @@ namespace sylar {
         ctx.scheduler = nullptr;
     }
 
-    IOManager::IOManager(size_t thread, bool use_caller, const std::string& name)
-        : Scheduler(thread, use_caller, name) {
-        m_epfd = epoll_create(5000);    // epoll fd
-        __ASSERT(m_epfd > 0);       
+    IOManager::IOManager(size_t threads, bool use_caller, const std::string& name)
+        : Scheduler(threads, use_caller, name) {
+        m_epfd = epoll_create(5000);
+        __ASSERT(m_epfd > 0);
 
-        int rt = pipe(m_tickleFds);     // 开启匿名pipe: 1 read, 2 write
-        __ASSERT(rt);
+        int rt = pipe(m_tickleFds);
+        __ASSERT(!rt);
 
         epoll_event event;
         memset(&event, 0, sizeof(epoll_event));
         event.events = EPOLLIN | EPOLLET;
         event.data.fd = m_tickleFds[0];
 
-        rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);    // 将管道IO设置为非阻塞
-        __ASSERT(rt);
+        rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);
+        __ASSERT(!rt);
 
-        rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);  // 添加读事件event监测
-        __ASSERT(rt);
+        rt = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_tickleFds[0], &event);
+        __ASSERT(!rt);
 
         contextResize(32);
+
         start();
     }
     IOManager::~IOManager() {
@@ -95,53 +97,52 @@ namespace sylar {
         FdContext* fd_ctx = nullptr;
         RWMutexType::ReadLock lock(m_mutex);
         if((int)m_fdContexts.size() > fd) {
-            fd_ctx = m_fdContexts[fd];                  // 拿出fd所指向的事件内容
+            fd_ctx = m_fdContexts[fd];
             lock.unlock();
         } else {
             lock.unlock();
-            RWMutexType::WriteLock lock2(m_mutex);      // 修正事件队列大小，需要加写锁
+            RWMutexType::WriteLock lock2(m_mutex);
             contextResize(fd * 1.5);
+            fd_ctx = m_fdContexts[fd];
         }
 
-        FdContext::MutexType::Lock lock2(fd_ctx->mutex);    // 对事件加锁
-        if(fd_ctx->events & event) {                    // 不能向已注册的事件加不同类型的句柄，如向读事件添加写事件
+        FdContext::MutexType::Lock lock2(fd_ctx->mutex);
+        if(!(fd_ctx->events & event)) {
             __LOG_ERROR(g_logger) << "addEvent assert fd=" << fd
-                                  << " event=" << event
-                                  << " fd->m_event" << fd_ctx->events;
+                        << " event=" << (EPOLL_EVENTS)event
+                        << " fd_ctx.event=" << (EPOLL_EVENTS)fd_ctx->events;
             __ASSERT(!(fd_ctx->events & event));
         }
 
-        // 设置epoll_ctl参数
-        int op = fd_ctx->events ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;    // 如果已经有了事件对象，则操作为修改，如果没有，则操作为添加
-        Event new_event = (Event)(fd_ctx->events | event);
-        epoll_event epevent;                            // 创建新的epoll_event
-        epevent.events = EPOLLET | new_event;  // 边缘触发 | 原注册事件的event | 新添加事件的event
+        int op = fd_ctx->events ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
+        epoll_event epevent;
+        epevent.events = EPOLLET | fd_ctx->events | event;
         epevent.data.ptr = fd_ctx;
 
-        // 执行epoll_Ctl
         int rt = epoll_ctl(m_epfd, op, fd, &epevent);
         if(rt) {
             __LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                << op << "," << fd << "," << epevent.events << "):"
-                << rt << " (" << errno << ") (" << strerror(errno) <<")";
+                << op << ", " << fd << ", " << epevent.events << "):"
+                << rt << " (" << errno << ") (" << strerror(errno) << ") fd_ctx->events="
+                << fd_ctx->events;
             return -1;
         }
 
-        ++m_pendingEventCount;  // 准备好事件，计数器+1
-        fd_ctx->events = new_event;  // 修改vector中存储的event
-        FdContext::EventContext& event_ctx = fd_ctx->getContext(event); // 将具体事件的读/写的 调度器/协程/cb方法返回
+        ++m_pendingEventCount;
+        fd_ctx->events = (Event)(fd_ctx->events | event);
+        FdContext::EventContext& event_ctx = fd_ctx->getContext(event);
         __ASSERT(!event_ctx.scheduler
-                && !event_ctx.fiber
-                && !event_ctx.cb);
-        
-        event_ctx.scheduler = Scheduler::GetThis(); // 调度器设定为当前线程的调度器
+                    && !event_ctx.fiber
+                    && !event_ctx.cb);
+
+        event_ctx.scheduler = Scheduler::GetThis();
         if(cb) {
             event_ctx.cb.swap(cb);
         } else {
-            event_ctx.fiber = Fiber::GetThis();     // 调度器设定为当前线程运行的协程，因为协程正在运行，必为EXEC状态
-            __ASSERT(event_ctx.fiber->getState() == Fiber::EXEC);
+            event_ctx.fiber = Fiber::GetThis();
+            __ASSERT2(event_ctx.fiber->getState() == Fiber::EXEC
+                        ,"state=" << event_ctx.fiber->getState());
         }
-
         return 0;
     }
     bool IOManager::delEvent(int fd, Event event) {
@@ -276,6 +277,7 @@ namespace sylar {
     }
 
     void IOManager::idle() {
+        __LOG_INFO(g_logger) << "idle";
         epoll_event* events = new epoll_event[64]();    // 创建空event对象，方便wait时返回事件
         std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr){
             delete [] ptr;
@@ -289,6 +291,7 @@ namespace sylar {
             int rt = 0;
             do {
                 static const int MAX_TIMEOUT = 5000;
+                __LOG_INFO(g_logger) << "waitting...";
                 int rt = epoll_wait(m_epfd, events, 64, MAX_TIMEOUT);
 
                 if(rt < 0 && errno == EINTR) {
@@ -302,7 +305,7 @@ namespace sylar {
                 epoll_event& event = events[i];
                 if(event.data.fd == m_tickleFds[0]) {   // 管道需要把数据读取出来，其他事件需要处理
                     uint8_t dummy;
-                    while(read(m_tickleFds[0], &dummy, 1) == 1);
+                    while(read(m_tickleFds[0], &dummy, sizeof(dummy)) > 0);
                     continue;
                 }
 
@@ -310,7 +313,7 @@ namespace sylar {
                 FdContext::MutexType::Lock lock(fd_ctx->mutex);
 
                 if(event.events & (EPOLLERR | EPOLLHUP)) {  //错误或者挂断
-                    event.events |= EPOLLERR | EPOLLHUP;
+                    event.events |= (EPOLLIN | EPOLLOUT) & event.events;
                 }
 
                 int real_events = NONE;

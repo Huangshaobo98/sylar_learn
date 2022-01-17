@@ -87,15 +87,38 @@ namespace sylar {
                 << sylar::BacktraceToString();
         }
         // 这里取出裸指针，直接用裸指针来控制协程切出
-        auto raw_cur = cur.get();
+        auto raw_ptr = cur.get();
         cur.reset();    
-        if(!raw_cur->m_usecaller) {
-            raw_cur->swapOut();
-        } else {
-            raw_cur->back();
-        }
+        raw_ptr->swapOut();
         //程序不会执行到这里，因此无法释放智能指针包裹的cur
-        __ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_cur->getId()));
+        __ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
+    }
+    void Fiber::CallerMainFunc() {
+        Fiber::ptr cur = GetThis();
+        __ASSERT(cur);
+        try {
+            cur->m_cb();
+            cur->m_cb = nullptr;
+            cur->m_state = TERM;
+        } catch (std::exception& ex) {
+            cur->m_state = EXCEPT;
+            __LOG_ERROR(g_logger) << "Fiber Except: " << ex.what()
+                << " fiber_id=" << cur->getId()
+                << std::endl
+                << sylar::BacktraceToString();
+        } catch (...) {
+            cur->m_state = EXCEPT;
+            __LOG_ERROR(g_logger) << "Fiber Except"
+                << " fiber_id=" << cur->getId()
+                << std::endl
+                << sylar::BacktraceToString();
+        }
+
+        auto raw_ptr = cur.get();
+        cur.reset();
+        raw_ptr->back();
+        __ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
+
     }
 
     uint64_t Fiber::GetFiberId() {
@@ -114,13 +137,12 @@ namespace sylar {
         }
 
         ++s_fiber_count;
-        __LOG_DEBUG(g_logger) << "Fiber::Fiber";
+        __LOG_DEBUG(g_logger) << "Fiber::Fiber main";
     }
 
     Fiber::Fiber(std::function<void()>cb, size_t stacksize, bool use_caller) 
         :m_id(++s_fiber_id)
-        ,m_cb(cb)
-        ,m_usecaller(use_caller){
+        ,m_cb(cb){
         ++s_fiber_count;
         m_stacksize = stacksize ? stacksize : g_fiber_stack_size->getValue();
 
@@ -132,7 +154,11 @@ namespace sylar {
         m_ctx.uc_stack.ss_sp = m_stack;
         m_ctx.uc_stack.ss_size = m_stacksize;
         // 以static方法MainFunc作为入参地址，make出上下文，然后存储在协程实例的m_ctx中
-        makecontext(&m_ctx, &Fiber::MainFunc, 0);
+        if(!use_caller) {
+            makecontext(&m_ctx, &Fiber::MainFunc, 0);
+        } else {
+            makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
+        }
         
         __LOG_DEBUG(g_logger) << "Fiber::Fiber id=" << m_id;
     }
@@ -206,18 +232,10 @@ namespace sylar {
     // 切出
     void Fiber::swapOut() {
 
-        if(this != Scheduler::GetMainFiber()) {
-            SetThis(Scheduler::GetMainFiber()); // 返回调度器主协程
-            if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)){ //这里Scheduler主协程跟自己切换了
-                __ASSERT2(false, "swapcontext");
-            }
-        } else {
-            SetThis(t_threadFiber.get()); // 返回线程主协程
-            if(swapcontext(&m_ctx, &t_threadFiber->m_ctx)){ //这里Scheduler主协程跟自己切换了
-                __ASSERT2(false, "swapcontext");
-            }
+        SetThis(Scheduler::GetMainFiber()); // 返回调度器主协程
+        if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)){ //这里Scheduler主协程跟自己切换了
+            __ASSERT2(false, "swapcontext");
         }
-
 
     }
 }

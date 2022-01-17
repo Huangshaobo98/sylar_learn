@@ -4,7 +4,7 @@
  * @Autor: huang
  * @Date: 2022-01-16 11:39:52
  * @LastEditors: huang
- * @LastEditTime: 2022-01-16 23:39:49
+ * @LastEditTime: 2022-01-17 16:37:12
  */
 #ifndef __IOMANAGER_H__
 #define __IOMANAGER_H__
@@ -13,6 +13,7 @@
 #include "fiber.h"
 #include <functional>
 #include <vector>
+#include <sys/epoll.h>
 namespace sylar{
     class IOManager : public Scheduler {
         public:
@@ -20,9 +21,9 @@ namespace sylar{
             typedef RWMutex RWMutexType;
 
             enum Event {
-                NONE = 0x0,
-                READ = 0x1,
-                WRITE = 0x2,
+                NONE    = 0x0,
+                READ    = 0x1,
+                WRITE   = 0x4,
             };
         
         private:
@@ -44,7 +45,7 @@ namespace sylar{
             };
 
         public:
-            IOManager(size_t thread = 1, bool use_caller = true, const std::string& name = "");
+            IOManager(size_t threads = 1, bool use_caller = true, const std::string& name = "");
             ~IOManager();
             
             // 1 success 0 retry, -1 error

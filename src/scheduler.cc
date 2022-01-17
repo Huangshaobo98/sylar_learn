@@ -7,7 +7,7 @@ namespace sylar {
 
     static thread_local Scheduler* t_scheduler = nullptr; // 主协程调度器
 
-    static thread_local Fiber* t_fiber = nullptr; // 主协程
+    static thread_local Fiber* t_scheduler_fiber = nullptr; // 主协程
 
 
     Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name) 
@@ -28,7 +28,7 @@ namespace sylar {
                                                                                         // 不是0号协程了，至少为1号协程
             sylar::Thread::SetName(m_name); // 给本线程设定name
 
-            t_fiber = m_rootFiber.get();    // 主协程被保存在thread_local变量中，这里也不是0号协程
+            t_scheduler_fiber = m_rootFiber.get();    // 主协程被保存在thread_local变量中，这里也不是0号协程
             m_rootThread = sylar::GetThreadId();    // 管理线程的id，也就是schedulerId
             m_threadIds.push_back(m_rootThread);    // 线程容器，存储各线程id
 
@@ -51,7 +51,7 @@ namespace sylar {
         return t_scheduler;
     }
     Fiber* Scheduler::GetMainFiber() {
-        return t_fiber;
+        return t_scheduler_fiber;
     }
 
     void Scheduler::start() {
@@ -153,7 +153,7 @@ namespace sylar {
 
         setThis();  // 先把主调度器设为自身
         if(sylar::GetThreadId() != m_rootThread) {    // 如果线程ID不为主线程ID，也就是说子线程
-            t_fiber = Fiber::GetThis().get();   // 当前协程就设为Fiber的主协程
+            t_scheduler_fiber = Fiber::GetThis().get();   // 当前协程就设为Fiber的主协程
         }
         Fiber::ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle, this)));    //构造一个用于处理闲置状态的协程
         Fiber::ptr cb_fiber;
@@ -189,6 +189,7 @@ namespace sylar {
                     is_active = true;
                     break;
                 }
+                tickle_me |= it != m_fibers.end();
             }
             if(tickle_me) {
                 // 标志位，唤醒其他线程
