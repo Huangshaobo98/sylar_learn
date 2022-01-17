@@ -22,7 +22,8 @@ set(LIB_SRC
     src/config.cc
     src/thread.cc
     src/mutex.cc
-    src/scheduler.cc)
+    src/scheduler.cc
+    src/iomanager.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
@@ -62,6 +63,11 @@ add_executable(test_scheduler tests/test_scheduler.cc)
 add_dependencies(test_scheduler sylar)
 force_redefine_file_macro_for_sources(test_scheduler)
 target_link_libraries(test_scheduler ${LIB_LIB})
+
+add_executable(test_iomanager tests/test_iomanager.cc)
+add_dependencies(test_iomanager sylar)
+force_redefine_file_macro_for_sources(test_iomanager)
+target_link_libraries(test_iomanager ${LIB_LIB})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

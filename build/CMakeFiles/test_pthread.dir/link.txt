@@ -1,0 +1,1 @@
+/usr/bin/x86_64-redhat-linux-g++ -g CMakeFiles/test_pthread.dir/tests/test_pthread.cc.o -o test_pthread  -Wl,-rpath,/home/huang/workspace/sylar_learn/build libsylar.so -lyaml-cpp -lpthread 

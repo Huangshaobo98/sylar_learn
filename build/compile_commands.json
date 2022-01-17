@@ -1,0 +1,77 @@
+[
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/util.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/util.cc.o -c /home/huang/workspace/sylar_learn/src/util.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/util.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/fiber.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/fiber.cc.o -c /home/huang/workspace/sylar_learn/src/fiber.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/fiber.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/log.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/log.cc.o -c /home/huang/workspace/sylar_learn/src/log.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/log.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/config.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/config.cc.o -c /home/huang/workspace/sylar_learn/src/config.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/config.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/thread.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/thread.cc.o -c /home/huang/workspace/sylar_learn/src/thread.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/thread.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/mutex.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/mutex.cc.o -c /home/huang/workspace/sylar_learn/src/mutex.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/mutex.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/scheduler.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/scheduler.cc.o -c /home/huang/workspace/sylar_learn/src/scheduler.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/scheduler.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++ -Dsylar_EXPORTS -D__FILE__=\\\"src/iomanager.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g -fPIC   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/sylar.dir/src/iomanager.cc.o -c /home/huang/workspace/sylar_learn/src/iomanager.cc",
+  "file": "/home/huang/workspace/sylar_learn/src/iomanager.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_log.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_log.dir/tests/test_log.cc.o -c /home/huang/workspace/sylar_learn/tests/test_log.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_log.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_config.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_config.dir/tests/test_config.cc.o -c /home/huang/workspace/sylar_learn/tests/test_config.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_config.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_pthread.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_pthread.dir/tests/test_pthread.cc.o -c /home/huang/workspace/sylar_learn/tests/test_pthread.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_pthread.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_util.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_util.dir/tests/test_util.cc.o -c /home/huang/workspace/sylar_learn/tests/test_util.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_util.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_fiber.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_fiber.dir/tests/test_fiber.cc.o -c /home/huang/workspace/sylar_learn/tests/test_fiber.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_fiber.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_scheduler.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_scheduler.dir/tests/test_scheduler.cc.o -c /home/huang/workspace/sylar_learn/tests/test_scheduler.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_scheduler.cc"
+},
+{
+  "directory": "/home/huang/workspace/sylar_learn/build",
+  "command": "/usr/bin/x86_64-redhat-linux-g++  -D__FILE__=\\\"tests/test_iomanager.cc\\\" -I/usr/local/lib64 -I/usr/lib64 -g   -Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -std=gnu++11 -o CMakeFiles/test_iomanager.dir/tests/test_iomanager.cc.o -c /home/huang/workspace/sylar_learn/tests/test_iomanager.cc",
+  "file": "/home/huang/workspace/sylar_learn/tests/test_iomanager.cc"
+}
+]

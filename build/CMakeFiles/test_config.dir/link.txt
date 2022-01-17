@@ -1,0 +1,1 @@
+/usr/bin/x86_64-redhat-linux-g++ -g CMakeFiles/test_config.dir/tests/test_config.cc.o -o test_config  -Wl,-rpath,/home/huang/workspace/sylar_learn/build libsylar.so -lyaml-cpp -lpthread 
