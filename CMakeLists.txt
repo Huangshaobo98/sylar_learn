@@ -10,7 +10,7 @@ include_directories(/usr/local/lib64)
 include_directories(/usr/lib64)
 find_library(YAMLCPP yaml-cpp)
 find_library(PTHREAD pthread)
-
+find_library(PTHREAD pthread)
 include(CTest)
 enable_testing()
 
@@ -23,13 +23,16 @@ set(LIB_SRC
     src/thread.cc
     src/mutex.cc
     src/scheduler.cc
-    src/iomanager.cc)
+    src/iomanager.cc
+    src/timer.cc
+    src/hook.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
 
 set(LIB_LIB
     sylar
+    dl
     yaml-cpp
     pthread
     )
@@ -68,6 +71,11 @@ add_executable(test_iomanager tests/test_iomanager.cc)
 add_dependencies(test_iomanager sylar)
 force_redefine_file_macro_for_sources(test_iomanager)
 target_link_libraries(test_iomanager ${LIB_LIB})
+
+add_executable(test_hook tests/test_hook.cc)
+add_dependencies(test_hook sylar)
+force_redefine_file_macro_for_sources(test_hook)
+target_link_libraries(test_hook ${LIB_LIB})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
