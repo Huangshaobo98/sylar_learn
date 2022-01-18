@@ -30,7 +30,9 @@ namespace sylar {
             void stop();
 
             /**
-             *  @brief 执行调度，一次支持一个协程的调度 
+             *  @brief 执行调度
+             *  @param fc 协程或者回调方法
+             *  @param thread 指定线程
              */
             template<class FiberOrCallback>
             void schedule(FiberOrCallback fc, int thread = -1) {

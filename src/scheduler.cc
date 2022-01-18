@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "log.h"
 #include "macro.h"
+#include "hook.h"
 namespace sylar {
 
     static sylar::Logger::ptr g_logger = __LOG_NAME("system");
@@ -151,6 +152,7 @@ namespace sylar {
         // 1号及以后的协程执行的操作
         __LOG_INFO(g_logger) << "run";
 
+        set_hook_enable(true);
         setThis();  // 先把主调度器设为自身
         if(sylar::GetThreadId() != m_rootThread) {    // 如果线程ID不为主线程ID，也就是说子线程
             t_scheduler_fiber = Fiber::GetThis().get();   // 当前协程就设为Fiber的主协程
