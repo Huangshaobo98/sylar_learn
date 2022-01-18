@@ -16,7 +16,6 @@ namespace sylar{
     class Scheduler;
 
     class Fiber : public std::enable_shared_from_this<Fiber> {
-        // 主要是为了利用shared_from_this方法，如果直接返回this指针的智能指针，会导致两次析构的问题。
         friend class Scheduler;
         public:
             typedef std::shared_ptr<Fiber> ptr;

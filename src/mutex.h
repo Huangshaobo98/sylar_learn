@@ -33,7 +33,7 @@ namespace sylar {
                     m_locked = true;
                 }
             ~ScopedLockImpl() {
-                m_mutex.unlock();
+                unlock();
             }
             void lock() {
                 if(!m_locked) {
@@ -67,7 +67,7 @@ namespace sylar {
                     m_locked = true;
                 }
             ~ReadScopedLockImpl() {
-                m_mutex.unlock();
+                unlock();
             }
             void lock() {
                 if(!m_locked) {
@@ -102,7 +102,7 @@ namespace sylar {
                     m_locked = true;
                 }
             ~WriteScopedLockImpl() {
-                m_mutex.unlock();
+                unlock();
             }
             void lock() {
                 if(!m_locked) {

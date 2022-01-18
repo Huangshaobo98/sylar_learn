@@ -46,16 +46,27 @@ void test_fiber() {
     }
 
 }
+sylar::Timer::ptr s_timer;
+void test_timer() {
+    sylar::IOManager iom(2);
+    s_timer = iom.addTimer(1000, [](){
+        static int i = 0;
+        __LOG_INFO(g_logger) << "Hello Timer" << i;
+        if(++i == 5) {
+            s_timer->reset(2000, true);
+        }
+    }, true);
+}
 
 void test1() {
     std::cout << "EPOLLIN=" << EPOLLIN
               << " EPOLLOUT=" << EPOLLOUT << std::endl;
-    sylar::IOManager iom;
+    sylar::IOManager iom(2);
     iom.schedule(&test_fiber);
 }
 
 int main(int argc, char** argv) {
-    test1();
-    //test_timer();
+    //test1();
+    test_timer();
     return 0;
 }

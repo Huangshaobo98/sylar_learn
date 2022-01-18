@@ -10,6 +10,7 @@
 #include <execinfo.h>
 #include <sstream>
 #include <iostream>
+#include <sys/time.h>
 namespace sylar {
     
     Logger::ptr g_logger = __LOG_NAME("system");
@@ -20,6 +21,18 @@ namespace sylar {
 
     uint32_t GetFiberId() {
         return sylar::Fiber::GetFiberId();
+    }
+
+    uint64_t GetCurrentMS() {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    }
+
+    uint64_t GetCurrentUS() {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
     }
 
     void Backtrace(std::vector<std::string>& bt, int size, int skip) {
