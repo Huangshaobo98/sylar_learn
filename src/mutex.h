@@ -4,21 +4,16 @@
 #include <stdint.h>
 #include <atomic>
 #include <pthread.h>
-#include "mutex.h"
+#include "noncopyable.h"
 namespace sylar {
 
 
-    class Semaphore {
+    class Semaphore : Noncopyable{
         public:
             Semaphore(uint32_t count = 0);
             ~Semaphore();
             void wait();
             void notify();
-
-        private:
-            Semaphore(const Semaphore&) = delete;
-            Semaphore(const Semaphore&&) = delete;
-            Semaphore& operator=(const Semaphore&) = delete;
 
         private:
             sem_t m_semaphore;
@@ -123,7 +118,7 @@ namespace sylar {
             bool m_locked;
     };
     
-    class NullMutex {
+    class NullMutex : Noncopyable{
         public:
             typedef ScopedLockImpl<NullMutex> Lock;
             NullMutex() {}
@@ -136,7 +131,7 @@ namespace sylar {
     /**
      * @brief 原子锁
      */
-    class CASLock {
+    class CASLock : Noncopyable {
     public:
         /// 局部锁
         typedef ScopedLockImpl<CASLock> Lock;
@@ -163,7 +158,7 @@ namespace sylar {
     /**
      * @brief spinlock锁
      */
-    class Spinlock {
+    class Spinlock : Noncopyable {
         public:
             typedef ScopedLockImpl<Spinlock> Lock;
             Spinlock() {
@@ -183,7 +178,7 @@ namespace sylar {
 
     };
 
-    class Mutex {
+    class Mutex : Noncopyable {
         public:
             typedef ScopedLockImpl<Mutex> Lock;
         public:
@@ -207,7 +202,7 @@ namespace sylar {
      * @brief 测试用空锁
      * 
      */
-    class NullRWMutex {
+    class NullRWMutex : Noncopyable{
         public:
             typedef ReadScopedLockImpl<NullRWMutex> ReadLock;
             typedef WriteScopedLockImpl<NullRWMutex> WriteLock;
@@ -222,7 +217,7 @@ namespace sylar {
      * @brief 读写锁
      * 
      */
-    class RWMutex {
+    class RWMutex : Noncopyable {
         public:
             typedef ReadScopedLockImpl<RWMutex> ReadLock;
             typedef WriteScopedLockImpl<RWMutex> WriteLock;

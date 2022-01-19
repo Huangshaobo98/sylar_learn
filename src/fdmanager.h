@@ -22,7 +22,7 @@ namespace sylar{
 
             void setSysNonblock(bool v) { m_sysNonblock = v;}
             bool getSysNonblock() const { return m_sysNonblock;}
-            bool getUserNonblock() const { return m_userNonblock;}
+
             void setTimeout(int type, uint64_t v);
             uint64_t getTimeout(int type);
         private:

@@ -18,6 +18,7 @@ enable_testing()
 set(LIB_SRC
     src/util.cc
     src/fiber.cc
+    src/fdmanager.cc
     src/log.cc
     src/config.cc
     src/thread.cc

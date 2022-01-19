@@ -9,6 +9,7 @@ namespace sylar {
         ,m_isSocket(false)
         ,m_sysNonblock(false)
         ,m_userNonblock(false)
+        ,m_isClosed(false)
         ,m_fd(fd)
         ,m_recvTimeout(-1)
         ,m_sendTimeout(-1)
@@ -45,19 +46,19 @@ namespace sylar {
         
         m_userNonblock = false;
         m_isClosed = false;
-        return m_isClosed;
+        return m_isInit;
     }
     void FdCtx::setTimeout(int type, uint64_t v) {
         if(type == SO_RCVTIMEO) {
             m_recvTimeout = v;
-        } else if (type == SO_SNDTIMEO){
+        } else {
             m_sendTimeout = v;
         }
     }
     uint64_t FdCtx::getTimeout(int type) {
         if(type == SO_RCVTIMEO) {
             return m_recvTimeout;
-        } else if (type == SO_SNDTIMEO){
+        } else {
             return m_sendTimeout;
         }
     }
@@ -65,8 +66,11 @@ namespace sylar {
         m_datas.resize(64);
     }
     FdCtx::ptr FdManager::get(int fd, bool auto_create) {
+        if(fd == -1) {
+            return nullptr;
+        }
         RWMutexType::ReadLock lock(m_mutex);
-        if(m_datas.size() <= fd) {
+        if((int)m_datas.size() <= fd) {
             if(auto_create == false) {
                 return nullptr;
             }
@@ -79,12 +83,15 @@ namespace sylar {
 
         RWMutexType::WriteLock lock2(m_mutex);
         FdCtx::ptr ctx(new FdCtx(fd));
+        if(fd >= (int)m_datas.size()){
+            m_datas.resize(fd * 1.5);
+        }
         m_datas[fd] = ctx;
         return ctx;
     }
     void FdManager::del(int fd) {
         RWMutexType::WriteLock lock(m_mutex);
-        if(m_datas.size() <= fd) {
+        if((int)m_datas.size() <= fd) {
             return;
         }
         m_datas[fd].reset();

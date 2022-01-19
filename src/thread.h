@@ -9,10 +9,11 @@
 #include <stdint.h>
 #include <atomic>
 #include "mutex.h"
+#include "noncopyable.h"
 
 namespace sylar{
 
-    class Thread {
+    class Thread : Noncopyable {
         public:
             typedef std::shared_ptr<Thread> ptr;
             Thread(std::function<void()> cb, const std::string& name);
@@ -26,11 +27,6 @@ namespace sylar{
             static Thread* GetThis();
             static const std::string& GetName();
             static void SetName(const std::string& name);
-        private:
-            Thread(const Thread&) = delete;     //禁止复制、赋值和移动构造
-            Thread(const Thread&&) = delete;
-            Thread& operator=(const Thread&) = delete;
-
             static void* run(void* arg);
         private:
             pid_t m_id = -1;
