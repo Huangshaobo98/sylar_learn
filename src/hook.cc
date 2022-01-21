@@ -459,7 +459,7 @@ extern "C" {
                 }
             }
         }
-        return setsockopt(sockfd, level, optname, optval, optlen);
+        return setsockopt_f(sockfd, level, optname, optval, optlen);
     }
 
 }

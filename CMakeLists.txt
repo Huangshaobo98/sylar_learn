@@ -25,7 +25,8 @@ set(LIB_SRC
     src/iomanager.cc
     src/timer.cc
     src/hook.cc
-    src/address.cc)
+    src/address.cc
+    src/socket.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
@@ -81,6 +82,11 @@ add_executable(test_address tests/test_address.cc)
 add_dependencies(test_address sylar)
 force_redefine_file_macro_for_sources(test_address)
 target_link_libraries(test_address ${LIB_LIB})
+
+add_executable(test_socket tests/test_socket.cc)
+add_dependencies(test_socket sylar)
+force_redefine_file_macro_for_sources(test_socket)
+target_link_libraries(test_socket ${LIB_LIB})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
