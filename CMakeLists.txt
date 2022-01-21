@@ -77,6 +77,11 @@ add_dependencies(test_hook sylar)
 force_redefine_file_macro_for_sources(test_hook)
 target_link_libraries(test_hook ${LIB_LIB})
 
+add_executable(test_address tests/test_address.cc)
+add_dependencies(test_address sylar)
+force_redefine_file_macro_for_sources(test_address)
+target_link_libraries(test_address ${LIB_LIB})
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

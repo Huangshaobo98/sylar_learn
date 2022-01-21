@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <netdb.h>
 #include <ifaddrs.h>
+#include <string.h>
 namespace sylar {
 
     static Logger::ptr g_logger = __LOG_NAME("system");
@@ -299,7 +300,7 @@ namespace sylar {
         os << ((addr >> 24) & 0xff) << "."
            << ((addr >> 16) & 0xff) << "."
            << ((addr >> 8) & 0xff) << "."
-           << ((addr) & 0xff) << ".";
+           << ((addr) & 0xff);
         os << ":" << byteswapOnLittleEndian(m_addr.sin_port);
         return os;
     }
