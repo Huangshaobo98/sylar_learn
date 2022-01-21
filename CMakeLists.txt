@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16)
 project(sylar VERSION 0.1.0)
 include(cmake/utils.cmake)
 set(CMAKE_CXX_STANDARD 11)
@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_definitions(-Wall -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations)
 include_directories(/usr/local/include)
-include_directories(/usr/local/lib64)
-include_directories(/usr/lib64)
 find_library(YAMLCPP yaml-cpp)
 find_library(PTHREAD pthread)
 find_library(PTHREAD pthread)
@@ -26,7 +24,8 @@ set(LIB_SRC
     src/scheduler.cc
     src/iomanager.cc
     src/timer.cc
-    src/hook.cc)
+    src/hook.cc
+    src/address.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)

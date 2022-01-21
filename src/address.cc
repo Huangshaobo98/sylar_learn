@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stddef.h>
 #include <netdb.h>
+#include <ifaddrs.h>
 namespace sylar {
 
     static Logger::ptr g_logger = __LOG_NAME("system");
@@ -26,7 +27,7 @@ namespace sylar {
         return getAddr()->sa_family;
     }
 
-    std::string Address::toString() {
+    std::string Address::toString() const {
         std::stringstream ss;
         insert(ss);
         return ss.str();
@@ -67,10 +68,10 @@ namespace sylar {
         
         std::string node;
         const char* service = NULL;
-        if(!host.empty() && host[0] == '[') {   // ipv6结构，以[作为开始符号
+        if(!host.empty() && host[0] == '[') {   // 以[]接口开始的主机地址
             const char* endipv6 = (const char*) memchr(host.c_str() + 1, ']', host.size() - 1);
             if(endipv6) {   // 确实存在]，且已指向]
-                if(*(endipv6) + 1) == ':')  {//若指出端口
+                if(*(endipv6 + 1) == ':')  {//若指出端口
                     service = endipv6 + 2;  // service指向端口
                 }
                 node = host.substr(1, endipv6 - host.c_str() - 1);  // 相当于截取了IPv6地址
@@ -116,7 +117,7 @@ namespace sylar {
         }
         return nullptr;
     }
-    shared_ptr<IPAddress> Address::LookupAnyIPAddress(const std::string& host,
+    std::shared_ptr<IPAddress> Address::LookupAnyIPAddress(const std::string& host,
             int family, int type, int protocal) {
         std::vector<Address::ptr> result;
         if(Lookup(result, host, family, type, protocal)){
@@ -174,7 +175,7 @@ namespace sylar {
                 }
             }
         } catch (...) {
-            SYLAR_LOG_ERROR(g_logger) << "Address::GetInterfaceAddresses exception";
+            __LOG_ERROR(g_logger) << "Address::GetInterfaceAddresses exception";
             freeifaddrs(results);
             return false;
         }
@@ -488,24 +489,27 @@ namespace sylar {
         return os << m_addr.sun_path;
     }
 
-    UnknowAddress::UnknowAddress(int family) {
+    UnknownAddress::UnknownAddress(int family) {
         memset(&m_addr, 0, sizeof(m_addr));
         m_addr.sa_family = family;
     }
 
-    const sockaddr* UnknowAddress::getAddr() const {
+    UnknownAddress::UnknownAddress(const sockaddr& addr) {
+        m_addr = addr;
+    }   
+    const sockaddr* UnknownAddress::getAddr() const {
         return &m_addr;
     }
 
-    sockaddr* UnknowAddress::getAddr() {
+    sockaddr* UnknownAddress::getAddr() {
         return (sockaddr*)&m_addr;
     }
 
-    socklen_t UnknowAddress::getAddrLen() const {
+    socklen_t UnknownAddress::getAddrLen() const {
         return sizeof(m_addr);
     }
 
-    std::ostream& UnknowAddress::insert(std::ostream& os) const {
+    std::ostream& UnknownAddress::insert(std::ostream& os) const {
         os << "[UnkonwAddress family=" << m_addr.sa_family << "]";
         return os;
     }
