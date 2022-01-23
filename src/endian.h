@@ -24,7 +24,7 @@ namespace sylar {
         return (T)bswap_16((uint16_t)value);
     }
 
-    #if __BYTE_ORDER == __BIG_ENDIAN
+    #if BYTE_ORDER == BIG_ENDIAN
 
     template<typename T>
     T byteswapOnLittleEndian(T t) {

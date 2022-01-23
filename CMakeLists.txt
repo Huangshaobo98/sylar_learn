@@ -26,7 +26,8 @@ set(LIB_SRC
     src/timer.cc
     src/hook.cc
     src/address.cc
-    src/socket.cc)
+    src/socket.cc
+    src/bytearray.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
@@ -87,6 +88,11 @@ add_executable(test_socket tests/test_socket.cc)
 add_dependencies(test_socket sylar)
 force_redefine_file_macro_for_sources(test_socket)
 target_link_libraries(test_socket ${LIB_LIB})
+
+add_executable(test_bytearray tests/test_bytearray.cc)
+add_dependencies(test_bytearray sylar)
+force_redefine_file_macro_for_sources(test_bytearray)
+target_link_libraries(test_bytearray ${LIB_LIB})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

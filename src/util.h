@@ -6,16 +6,6 @@
  * @LastEditors: huang
  * @LastEditTime: 2021-12-30 23:04:09
  */
-/**
- * @file util.h
- * @author huang
- * @brief 常用方法封装
- * @version 0.1
- * @date 2021-12-29
- * 
- * @copyright Copyright (c) 2021
- * 
- */
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
