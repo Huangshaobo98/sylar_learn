@@ -6,15 +6,15 @@
 #include "util.h"
 
 #if defined __GNUC__ || defined __llvm__
-#   define __LICKLY(x) __builtin_expect(!!(x), 1)
-#   define __UNLICKLY(x) __builtin_expect(!!(x),0)
+#   define __LIKELY(x) __builtin_expect(!!(x), 1)
+#   define __UNLIKELY(x) __builtin_expect(!!(x),0)
 #else
-#   define __LICKLY(x) (x)
-#   define __UNLICKLY(x) (x)
+#   define __LIKELY(x) (x)
+#   define __UNLIKELY(x) (x)
 #endif
 
 #define __ASSERT(x) \
-    if(__UNLICKLY(!(x))) { \
+    if(__UNLIKELY(!(x))) { \
         __LOG_ERROR(__LOG_ROOT) << "ASSERTION: " #x \
                                 << "\nBacktrace:\n" \
                                 << sylar::BacktraceToString(100, 2, "    ");\
@@ -22,7 +22,7 @@
     }
 
 #define __ASSERT2(x, w) \
-    if(__UNLICKLY(!(x))) { \
+    if(__UNLIKELY(!(x))) { \
         __LOG_ERROR(__LOG_ROOT) << "ASSERTION: " #x \
                                 << "\n" << w \
                                 << "\nBacktrace:\n" \

@@ -423,7 +423,7 @@ namespace sylar {
     }
 
     void ByteArray::setPosition(size_t v) {
-        if(v > m_size) {
+        if(v > m_capacity) {
             throw std::out_of_range("setPosition out of range");
         }
         m_position = v;

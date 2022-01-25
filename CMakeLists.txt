@@ -27,7 +27,16 @@ set(LIB_SRC
     src/hook.cc
     src/address.cc
     src/socket.cc
-    src/bytearray.cc)
+    src/bytearray.cc
+    src/http/http.cc
+    src/http/http11_parser.rl.cc
+    src/http/httpclient_parser.rl.cc
+    src/http/http_parser.cc
+    src/tcp_server.cc
+    src/stream.cc
+    src/socket_stream.cc
+    src/http/http_session.cc
+    src/http/http_server.cc)
 
 add_library(sylar SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(sylar)
@@ -93,6 +102,31 @@ add_executable(test_bytearray tests/test_bytearray.cc)
 add_dependencies(test_bytearray sylar)
 force_redefine_file_macro_for_sources(test_bytearray)
 target_link_libraries(test_bytearray ${LIB_LIB})
+
+add_executable(test_http tests/test_http.cc)
+add_dependencies(test_http sylar)
+force_redefine_file_macro_for_sources(test_http)
+target_link_libraries(test_http ${LIB_LIB})
+
+add_executable(test_http_parser tests/test_http_parser.cc)
+add_dependencies(test_http_parser sylar)
+force_redefine_file_macro_for_sources(test_http_parser)
+target_link_libraries(test_http_parser ${LIB_LIB})
+
+add_executable(test_tcp_server tests/test_tcp_server.cc)
+add_dependencies(test_tcp_server sylar)
+force_redefine_file_macro_for_sources(test_tcp_server)
+target_link_libraries(test_tcp_server ${LIB_LIB})
+
+add_executable(echo_server example/echo_server.cc)
+add_dependencies(echo_server sylar)
+force_redefine_file_macro_for_sources(echo_server)
+target_link_libraries(echo_server ${LIB_LIB})
+
+add_executable(test_http_server tests/test_http_server.cc)
+add_dependencies(test_http_server sylar)
+force_redefine_file_macro_for_sources(test_http_server)
+target_link_libraries(test_http_server ${LIB_LIB})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
